@@ -1,0 +1,92 @@
+Task Automation Guide
+This section explains how to schedule main.py to run automatically at set intervals. Instructions are provided for both Windows and macOS.
+
+Automating on Windows Using Task Scheduler
+Open Task Scheduler:
+
+Click the Start button, type Task Scheduler, and open it.
+Create a New Task:
+
+Click Create Task... in the right-hand pane.
+In the General tab, provide a name (e.g., "Run Orchestrator Every 2 Hours") and, if needed, a description.
+Select Run whether user is logged on or not.
+Optionally, check Run with highest privileges if your script requires administrative rights.
+Set the Trigger:
+
+Go to the Triggers tab and click New....
+Under Begin the task, select On a schedule.
+Choose Daily and set the start time.
+Check Repeat task every: and select 2 hours.
+Set for a duration of: to Indefinitely.
+Click OK to save the trigger.
+Define the Action:
+
+Switch to the Actions tab and click New....
+For Action, select Start a program.
+In the Program/script field, enter the full path to your Python executable (e.g., C:\Python39\python.exe).
+In the Add arguments (optional) field, enter the full path to main.py (e.g., C:\path\to\main.py).
+Click OK.
+Save and Test:
+
+Click OK to save the task.
+Right-click your newly created task in Task Scheduler and select Run to test it.
+Automating on macOS
+You can schedule the script using either Cron Jobs or launchd.
+
+Using Cron Jobs
+Open Terminal.
+
+Edit Your Crontab:
+
+Run the command:
+bash
+Copy
+crontab -e
+This will open your crontab file in the default editor.
+Add a Cron Entry:
+
+Insert the following line to run the orchestrator every 2 hours:
+bash
+Copy
+0 */2 * * * /usr/local/bin/python3 /path/to/main.py
+Replace /usr/local/bin/python3 with the output from which python3 if necessary.
+Replace /path/to/main.py with the full path to your main.py file.
+Save and Exit:
+
+Save the file and exit the editor. The cron daemon will now run your script every 2 hours.
+Using launchd (Alternative to Cron)
+Create a Launch Agent Plist:
+
+Create a file named com.yourusername.orchestrator.plist in the directory ~/Library/LaunchAgents/.
+Insert the following content:
+xml
+Copy
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.yourusername.orchestrator</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>/usr/local/bin/python3</string>
+      <string>/path/to/main.py</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>7200</integer> <!-- 7200 seconds = 2 hours -->
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/orchestrator.out</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/orchestrator.err</string>
+  </dict>
+</plist>
+Adjust the paths to match your Python interpreter and the location of main.py.
+Load the Launch Agent:
+
+In Terminal, run:
+bash
+Copy
+launchctl load ~/Library/LaunchAgents/com.yourusername.orchestrator.plist
+This schedules your orchestrator to run every 2 hours automatically.

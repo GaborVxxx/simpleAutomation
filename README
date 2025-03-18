@@ -1,0 +1,39 @@
+# Orchestrator System README
+
+This repository contains an orchestrator system designed to sequentially execute batches of Python scripts that simulate API calls. The system ensures that each batch completes successfully before proceeding to the next and uses a lock file mechanism to prevent overlapping executions. Logging is implemented to monitor progress and record any issues.
+
+## System Overview
+
+The system comprises the following components:
+
+- **Individual Script Files:**
+  Each file (e.g., `file1.py`, `file2.py`, `file3.py`) simulates an API call by waiting for a few seconds before completing.
+  *You can replace these scripts with your actual API call logic.*
+
+- **Orchestrator Script (`main.py`):**
+  This script controls the sequential execution of batches:
+  - **Batch Processing:** Scripts are grouped into batches. A new batch starts only after the previous one completes successfully.
+  - **Lock File Mechanism:** A lock file (`main.lock`) is used to ensure that only one instance of the orchestrator runs at any time.
+  - **Logging:** Execution details and errors are logged into `main.log` (with optional console output).
+
+- **Log File (`main.log`):**
+  Stores logs from the orchestrator, including outputs and errors from each batch execution.
+
+## How the System Works
+
+1. **Lock File Check:**
+   At startup, `main.py` checks for the existence of `main.lock`. If the file exists, it assumes another instance is running, logs an error, and exits.
+
+2. **Batch Execution:**
+   - Batches are defined as lists of script filenames.
+   - Each script in a batch is executed sequentially. If a script fails, the current batch stops, and subsequent batches are not executed.
+
+3. **Lock Release:**
+   Upon completion (or exit), the lock file is removed, allowing future executions.
+
+## Running the System Manually
+
+To execute the orchestrator manually, run:
+
+```bash
+python main.py
