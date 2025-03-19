@@ -1,0 +1,11 @@
+{
+  "execution_mode": "async",  // change to "sync" for sequential execution
+  "batches": [
+    ["file1.py", "file2.py"],  // batches to run
+    ["file3.py"]
+  ]
+}
+
+sync mode will do calls inside a batch one by one
+async mode will make cals parallel at the same time. AKA we fire multiple cals at the same time not 1 by 1.
+

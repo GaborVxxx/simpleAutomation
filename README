@@ -1,6 +1,6 @@
 # Orchestrator System README
 
-This repository contains an orchestrator system designed to sequentially execute batches of Python scripts that simulate API calls. The system ensures that each batch completes successfully before proceeding to the next and uses a lock file mechanism to prevent overlapping executions. Logging is implemented to monitor progress and record any issues.
+This repository contains an orchestrator system designed to sequentially execute batches of Python scripts that simulate API calls. The system ensures that each batch completes successfully before proceeding to the next and uses a lock file mechanism to prevent overlapping executions. Enhanced logging and benchmarking features are included to monitor progress, capture errors, and track detailed execution timings.
 
 ## System Overview
 
@@ -8,32 +8,73 @@ The system comprises the following components:
 
 - **Individual Script Files:**
   Each file (e.g., `file1.py`, `file2.py`, `file3.py`) simulates an API call by waiting for a few seconds before completing.
-  *You can replace these scripts with your actual API call logic.*
+  *Replace these scripts with your actual API call logic as needed.*
 
 - **Orchestrator Script (`main.py`):**
-  This script controls the sequential execution of batches:
-  - **Batch Processing:** Scripts are grouped into batches. A new batch starts only after the previous one completes successfully.
-  - **Lock File Mechanism:** A lock file (`main.lock`) is used to ensure that only one instance of the orchestrator runs at any time.
-  - **Logging:** Execution details and errors are logged into `main.log` (with optional console output).
+  This is the core controller of the system, which manages the sequential execution of batches:
+  - **Batch Processing:**
+    Scripts are grouped into batches. A new batch starts only after the previous one completes successfully.
+  - **Execution Modes:**
+    The system can execute scripts within a batch either **synchronously** (one after another) or **asynchronously** (concurrently). This behavior is configurable via the configuration file.
+  - **Lock File Mechanism:**
+    A lock file (`main.lock`) is used to ensure that only one instance of the orchestrator runs at any time.
+  - **Logging:**
+    The orchestrator implements three types of logging:
+    - **Main Log (`main.log`):** Contains general execution logs, including outputs and progress updates.
+    - **Error Log (`error.log`):** Captures error-level logs to facilitate troubleshooting.
+    - **Benchmark Log (`benchmarks.log`):** Tracks detailed performance metrics including:
+      - Overall process start and end times (with total duration).
+      - Batch-level timings (start, end, and duration for each batch).
+      - Individual script execution timings (start, end, and duration for each script).
+      - Separator lines are inserted for better readability.
 
-- **Log File (`main.log`):**
-  Stores logs from the orchestrator, including outputs and errors from each batch execution.
+- **Configuration File (`config.json`):**
+  This file allows you to customize execution behavior. Key configuration options include:
+  - **execution_mode:** Set to `"sync"` for sequential execution or `"async"` for concurrent execution within a batch.
+  - **batches:** A list of batches, where each batch is a list of script filenames to be executed.
 
 ## How the System Works
 
 1. **Lock File Check:**
-   At startup, `main.py` checks for the existence of `main.lock`. If the file exists, it assumes another instance is running, logs an error, and exits.
+   At startup, `main.py` checks for the existence of `main.lock`. If the file exists, it logs an error (to both the console and `error.log`) and exits, preventing overlapping runs.
 
-2. **Batch Execution:**
-   - Batches are defined as lists of script filenames.
-   - Each script in a batch is executed sequentially. If a script fails, the current batch stops, and subsequent batches are not executed.
+2. **Configuration Loading:**
+   The system reads `config.json` to determine the execution mode and the batches to run.
 
-3. **Lock Release:**
-   Upon completion (or exit), the lock file is removed, allowing future executions.
+3. **Batch Execution:**
+   - **Synchronous Execution:**
+     Each script in a batch is executed one after the other using `subprocess.run()`. If any script fails, the batch halts and subsequent batches are not executed.
+   - **Asynchronous Execution:**
+     All scripts in a batch are launched concurrently using `subprocess.Popen()`. The system waits for all scripts in the batch to finish before proceeding to the next batch.
+   - In both modes, benchmarking data is collected for each script, batch, and the overall process.
 
-## Running the System Manually
+4. **Logging and Benchmarking:**
+   - **Main and Error Logging:**
+     All execution details are recorded in `main.log`, while error-level logs are also written to `error.log`.
+   - **Benchmarking:**
+     Detailed timing information is logged in `benchmarks.log`, including:
+     - Overall process start and end times, with total duration.
+     - Batch start and end times with duration.
+     - Individual script start and end times with execution duration.
+     - Separator lines (e.g., `------------------------------`) are inserted to enhance readability.
+   - The execution mode (sync or async) is also logged at the beginning of the process.
 
-To execute the orchestrator manually, run:
+5. **Lock Release:**
+   Once the execution is complete (or if the process exits), the lock file is automatically removed, allowing future runs.
 
-```bash
-python main.py
+## Running the System
+
+1. **Configure Execution:**
+   Edit the `config.json` file to set your desired `execution_mode` (`"sync"` or `"async"`) and to define your batches of scripts.
+
+2. **Start the Orchestrator:**
+   Run the orchestrator by executing:
+
+   ```bash
+   python main.py
+
+## Running unit test
+
+  ```bash
+  python -m unittest test_main.py
+
