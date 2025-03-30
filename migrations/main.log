@@ -1,0 +1,38 @@
+2025-03-30 20:59:28,575 INFO: Acquired lock with file main.lock.
+2025-03-30 20:59:28,576 INFO: ------------------------------
+2025-03-30 20:59:28,576 INFO: Starting data migration process.
+2025-03-30 20:59:28,576 INFO: Loaded configuration from config.json.
+2025-03-30 20:59:28,576 INFO: Initial memory usage: 18.66 MB
+2025-03-30 20:59:28,576 INFO: Total system memory: 24576.00 MB
+2025-03-30 20:59:28,576 INFO: Calling get_ids.py to retrieve IDs...
+2025-03-30 20:59:32,600 INFO: Successfully retrieved 100 IDs.
+2025-03-30 20:59:32,600 INFO: Total IDs to process: 100
+2025-03-30 20:59:32,600 INFO: ------------------------------
+2025-03-30 20:59:32,600 INFO: ------------------------------
+2025-03-30 20:59:32,600 INFO: Processing chunk 1 with 10 records.
+2025-03-30 20:59:32,600 INFO: Memory before processing chunk: 19.16 MB
+2025-03-30 20:59:34,634 INFO: Memory after processing chunk: 19.23 MB
+2025-03-30 20:59:34,634 INFO: Chunk 1 processed in 2.03 seconds with a memory delta of 0.08 MB (0.0003% of total system memory).
+2025-03-30 20:59:34,634 INFO: Chunk 1 processed successfully.
+2025-03-30 20:59:34,634 INFO: Output: Calling API with ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+{"status": "success", "processed_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+2025-03-30 20:59:34,634 INFO: ------------------------------
+2025-03-30 20:59:34,634 INFO: Adjusting chunk size from 10 to 1572864 based on average memory usage per record (0.0078 MB).
+2025-03-30 20:59:34,634 INFO: ------------------------------
+2025-03-30 20:59:34,634 INFO: Processing chunk 2 with 90 records.
+2025-03-30 20:59:34,634 INFO: Memory before processing chunk: 19.23 MB
+2025-03-30 20:59:36,668 INFO: Memory after processing chunk: 19.25 MB
+2025-03-30 20:59:36,668 INFO: Chunk 2 processed in 2.03 seconds with a memory delta of 0.02 MB (0.0001% of total system memory).
+2025-03-30 20:59:36,668 INFO: Chunk 2 processed successfully.
+2025-03-30 20:59:36,668 INFO: Output: Calling API with ids: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100]
+{"status": "success", "processed_ids": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100]}
+2025-03-30 20:59:36,668 INFO: ------------------------------
+2025-03-30 20:59:36,668 INFO: Adjusting chunk size from 1572864 to 70778880 based on average memory usage per record (0.0002 MB).
+2025-03-30 20:59:36,668 INFO: Final memory usage: 19.25 MB
+2025-03-30 20:59:36,669 INFO: Memory usage delta per chunk (MB): [0.078125, 0.015625]
+2025-03-30 20:59:36,669 INFO: Memory usage percentage per chunk (%): [0.00031789143880208337, 6.357828776041666e-05]
+2025-03-30 20:59:36,669 INFO: ------------------------------
+2025-03-30 20:59:36,669 INFO: Batch sizes used per chunk: [10, 1572864]
+2025-03-30 20:59:36,669 INFO: Data migration process completed.
+2025-03-30 20:59:36,669 INFO: ------------------------------
+2025-03-30 20:59:36,669 INFO: Released lock and removed main.lock.

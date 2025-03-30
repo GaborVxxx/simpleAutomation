@@ -1,0 +1,8 @@
+{
+  "chunk_size": 10,
+  "get_ids": "get_ids.py",
+  "process_chunk": "process_chunk.py",
+  "track_memory": true,
+  "dynamic_batch_size_based_on_memory_usage": true,
+  "max_memory_usage": 50
+}
