@@ -1,0 +1,36 @@
+2025-05-03 16:58:00,899 INFO: Acquired lock with file /Users/gaborvaszi/Development/Projects/MyProjects/Automation/SimpleScriptRunner/matrix_system/main.lock (PID: 11267).
+2025-05-03 16:58:00,899 INFO: Loaded configuration from /Users/gaborvaszi/Development/Projects/MyProjects/Automation/SimpleScriptRunner/matrix_system/config.json.
+2025-05-03 16:58:00,899 INFO: Execution mode: async
+2025-05-03 16:58:00,899 INFO: Process started at 2025-05-03 16:58:00.899472 (Mode: ASYNC)
+2025-05-03 16:58:00,899 INFO: ------------------------------
+2025-05-03 16:58:00,899 INFO: Starting Batch 1
+2025-05-03 16:58:00,899 INFO: Starting Batch 1
+2025-05-03 16:58:00,899 INFO: Batch started at 2025-05-03 16:58:00.899565
+2025-05-03 16:58:00,899 INFO: Script file1.py started at 2025-05-03 16:58:00.899584
+2025-05-03 16:58:00,900 INFO: Script file2.py started at 2025-05-03 16:58:00.900858
+2025-05-03 16:58:05,917 INFO: Script file1.py ended at 2025-05-03 16:58:05.917693 with duration 0:00:05.018109
+2025-05-03 16:58:05,918 INFO: Finished file1.py with output:
+File 1: Starting API simulation...
+File 1: Finished API simulation.
+
+2025-05-03 16:58:05,918 INFO: Script file2.py ended at 2025-05-03 16:58:05.918149 with duration 0:00:05.017291
+2025-05-03 16:58:05,918 INFO: Finished file2.py with output:
+File 2: Starting API simulation...
+File 2: Finished API simulation.
+
+2025-05-03 16:58:05,918 INFO: Batch ended at 2025-05-03 16:58:05.918240 with duration 0:00:05.018675
+2025-05-03 16:58:05,918 INFO: ------------------------------
+2025-05-03 16:58:05,918 INFO: Starting Batch 2
+2025-05-03 16:58:05,918 INFO: Starting Batch 2
+2025-05-03 16:58:05,918 INFO: Batch started at 2025-05-03 16:58:05.918433
+2025-05-03 16:58:05,918 INFO: Script file3.py started at 2025-05-03 16:58:05.918478
+2025-05-03 16:58:08,943 INFO: Script file3.py ended at 2025-05-03 16:58:08.943636 with duration 0:00:03.025158
+2025-05-03 16:58:08,944 INFO: Finished file3.py with output:
+File 3: Starting API simulation...
+File 3: Finished API simulation.
+
+2025-05-03 16:58:08,944 INFO: Batch ended at 2025-05-03 16:58:08.944046 with duration 0:00:03.025613
+2025-05-03 16:58:08,944 INFO: ------------------------------
+2025-05-03 16:58:08,944 INFO: Process ended at 2025-05-03 16:58:08.944172 with duration 0:00:08.044700
+2025-05-03 16:58:08,944 INFO: ------------------------------
+2025-05-03 16:58:08,944 INFO: Released lock and removed /Users/gaborvaszi/Development/Projects/MyProjects/Automation/SimpleScriptRunner/matrix_system/main.lock.
