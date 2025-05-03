@@ -1,0 +1,86 @@
+# Directed Graph System
+
+A lock-safe, dependency-driven orchestrator that runs Python scripts (nodes) in parallel whenever all their prerequisites complete. Each node is defined in a JSON graph and corresponds to a file in `process_files/`.
+
+---
+
+### Project Layout
+
+simpleAutomation/
+├─ run.py
+├─ run.json
+├─ process_files/
+│ ├─ file1.py
+│ ├─ file2.py
+│ └─ …
+└─ directed_graph_system/
+├─ main.py
+├─ config.json
+├─ main.lock
+├─ main.log
+├─ error.log
+└─ benchmarks.log
+
+
+
+- **run.py**: Launcher that reads `runconfig.json` to invoke `directed_graph_system/main.py`.
+- **process_files/**: All node scripts live here.
+- **directed_graph_system/**: Contains the orchestrator, its config, lock, and logs.
+
+---
+
+### Configuration (`config.json`)
+
+```json
+{
+  "nodes": {
+    "file1.py": { "in": [] },
+    "file2.py": { "in": ["file1.py"] },
+    "file3.py": { "in": ["file1.py"] },
+    "file4.py": { "in": ["file2.py","file3.py"] }
+  }
+}
+
+nodes: Map of script names to their "in" prerequisites.
+Downstream edges are inferred at runtime—only "in" lists are maintained.
+
+Execution Flow
+  Lock Acquisition
+    Checks for main.lock; aborts if held by an active PID, or cleans up a stale lock.
+    Writes its own PID to main.lock and sets HAS_LOCK = True.
+
+Graph Loading
+  Parses config.json into a nodes → in[] map.
+  Builds:
+    in_degree[node] = number of unmet prerequisites.
+    adj[node] = list of dependents (inverted from "in").
+
+Topological Scheduling
+  Enqueues all nodes with in_degree == 0.
+  Launch Phase: Spawns each ready node via subprocess.Popen, tracking in a running dict.
+  Polling Phase (every 0.5 s):
+    For each finished process:
+      Logs its output or error.
+      Adds to completed if success, decrements in_degree of its dependents, enqueues any newly ready nodes.
+      Aborts on failure.
+
+Completion & Cleanup
+  If all nodes complete, logs success; if not, reports a cycle or missing dependency and aborts.
+  Releases main.lock (only if HAS_LOCK is True) on exit.
+
+Logging & Benchmarking
+  main.log: INFO-level events (lock actions, orchestration start/end, node outputs).
+  error.log: ERROR-level events (lock failures, missing dependencies, node failures).
+  benchmarks.log: Timestamped records of each node’s start, end, and duration.
+
+Running the Orchestrator
+  Point the launcher (run.json):
+    { "entry_point": "directed_graph_system/main.py" }
+
+Execute:
+  python run.py
+
+Running Tests:
+  python3 -m unittest discover -v
+
+

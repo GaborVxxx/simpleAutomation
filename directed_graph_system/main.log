@@ -1,0 +1,90 @@
+2025-05-03 18:31:17,984 INFO: Acquired lock (PID 14169).
+2025-05-03 18:31:17,985 INFO: Starting directed graph execution
+2025-05-03 18:31:17,985 INFO: ------------------------------
+2025-05-03 18:31:17,985 INFO: file1.py started at 2025-05-03 18:31:17.985158
+2025-05-03 18:31:23,026 INFO: file1.py ended at 2025-05-03 18:31:23.026692, duration 0:00:05.041534
+2025-05-03 18:31:23,027 INFO: file1.py output:
+File 1: Starting API simulation...
+File 1: Finished API simulation.
+
+2025-05-03 18:31:23,027 INFO: file2.py started at 2025-05-03 18:31:23.027291
+2025-05-03 18:31:23,029 INFO: file3.py started at 2025-05-03 18:31:23.029890
+2025-05-03 18:31:26,057 INFO: file3.py ended at 2025-05-03 18:31:26.057338, duration 0:00:03.027448
+2025-05-03 18:31:26,057 INFO: file3.py output:
+File 3: Starting API simulation...
+File 3: Finished API simulation.
+
+2025-05-03 18:31:28,072 INFO: file2.py ended at 2025-05-03 18:31:28.072742, duration 0:00:05.045451
+2025-05-03 18:31:28,072 INFO: file2.py output:
+File 2: Starting API simulation...
+File 2: Finished API simulation.
+
+2025-05-03 18:31:28,073 INFO: file4.py started at 2025-05-03 18:31:28.073072
+2025-05-03 18:31:34,122 INFO: file4.py ended at 2025-05-03 18:31:34.122520, duration 0:00:06.049448
+2025-05-03 18:31:34,122 INFO: file4.py output:
+File 4: Starting API simulation...
+File 4: Finished API simulation.
+
+2025-05-03 18:31:34,122 INFO: All nodes completed successfully.
+2025-05-03 18:31:34,122 INFO: ------------------------------
+2025-05-03 18:31:34,123 INFO: Released lock and removed lock file.
+2025-05-03 18:32:41,669 INFO: Acquired lock (PID 14223).
+2025-05-03 18:32:41,669 INFO: Starting directed graph execution
+2025-05-03 18:32:41,669 INFO: ------------------------------
+2025-05-03 18:32:41,669 INFO: file1.py started at 2025-05-03 18:32:41.669637
+2025-05-03 18:32:46,713 INFO: file1.py ended at 2025-05-03 18:32:46.713320, duration 0:00:05.043683
+2025-05-03 18:32:46,713 INFO: file1.py output:
+File 1: Starting API simulation...
+File 1: Finished API simulation.
+
+2025-05-03 18:32:46,713 INFO: file2.py started at 2025-05-03 18:32:46.713905
+2025-05-03 18:32:46,716 INFO: file3.py started at 2025-05-03 18:32:46.716330
+2025-05-03 18:32:50,247 INFO: file3.py ended at 2025-05-03 18:32:50.247163, duration 0:00:03.530833
+2025-05-03 18:32:50,247 INFO: file3.py output:
+File 3: Starting API simulation...
+File 3: Finished API simulation.
+
+2025-05-03 18:32:51,758 INFO: file2.py ended at 2025-05-03 18:32:51.758030, duration 0:00:05.044125
+2025-05-03 18:32:51,758 INFO: file2.py output:
+File 2: Starting API simulation...
+File 2: Finished API simulation.
+
+2025-05-03 18:32:51,758 INFO: file4.py started at 2025-05-03 18:32:51.758575
+2025-05-03 18:32:57,808 INFO: file4.py ended at 2025-05-03 18:32:57.808507, duration 0:00:06.049932
+2025-05-03 18:32:57,808 INFO: file4.py output:
+File 4: Starting API simulation...
+File 4: Finished API simulation.
+
+2025-05-03 18:32:57,809 INFO: All nodes completed successfully.
+2025-05-03 18:32:57,809 INFO: ------------------------------
+2025-05-03 18:32:57,809 INFO: Released lock and removed lock file.
+2025-05-03 18:45:34,061 INFO: Acquired lock (PID 14629).
+2025-05-03 18:45:34,061 INFO: Starting directed graph execution
+2025-05-03 18:45:34,061 INFO: ------------------------------
+2025-05-03 18:45:34,061 INFO: file1.py started at 2025-05-03 18:45:34.061265
+2025-05-03 18:45:39,104 INFO: file1.py ended at 2025-05-03 18:45:39.103967, duration 0:00:05.042702
+2025-05-03 18:45:39,104 INFO: file1.py output:
+File 1: Starting API simulation...
+File 1: Finished API simulation.
+
+2025-05-03 18:45:39,104 INFO: file2.py started at 2025-05-03 18:45:39.104818
+2025-05-03 18:45:39,107 INFO: file3.py started at 2025-05-03 18:45:39.107720
+2025-05-03 18:45:42,635 INFO: file3.py ended at 2025-05-03 18:45:42.635667, duration 0:00:03.527947
+2025-05-03 18:45:42,636 INFO: file3.py output:
+File 3: Starting API simulation...
+File 3: Finished API simulation.
+
+2025-05-03 18:45:44,148 INFO: file2.py ended at 2025-05-03 18:45:44.148314, duration 0:00:05.043496
+2025-05-03 18:45:44,148 INFO: file2.py output:
+File 2: Starting API simulation...
+File 2: Finished API simulation.
+
+2025-05-03 18:45:44,148 INFO: file4.py started at 2025-05-03 18:45:44.148913
+2025-05-03 18:45:50,201 INFO: file4.py ended at 2025-05-03 18:45:50.201610, duration 0:00:06.052697
+2025-05-03 18:45:50,202 INFO: file4.py output:
+File 4: Starting API simulation...
+File 4: Finished API simulation.
+
+2025-05-03 18:45:50,202 INFO: All nodes completed successfully.
+2025-05-03 18:45:50,202 INFO: ------------------------------
+2025-05-03 18:45:50,203 INFO: Released lock and removed lock file.

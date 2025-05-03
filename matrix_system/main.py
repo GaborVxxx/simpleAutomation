@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Refactored main.py for matrix_system:
 - Original orchestrator logic now lives under matrix_system/
