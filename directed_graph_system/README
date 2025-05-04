@@ -1,5 +1,7 @@
 # Directed Graph System
 
+Kahn’s algorithm, linear scaling with memory. More nodes we have the more memory we use...
+
 A lock-safe, dependency-driven orchestrator that runs Python scripts (nodes) in parallel whenever all their prerequisites complete. Each node is defined in a JSON graph and corresponds to a file in `process_files/`.
 
 ---
