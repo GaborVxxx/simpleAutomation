@@ -88,3 +88,65 @@ File 4: Finished API simulation.
 2025-05-03 18:45:50,202 INFO: All nodes completed successfully.
 2025-05-03 18:45:50,202 INFO: ------------------------------
 2025-05-03 18:45:50,203 INFO: Released lock and removed lock file.
+Acquired lock (PID 6181).
+Loaded configuration from /Users/gaborvaszi/Development/Projects/MyProjects/Automation/SimpleScriptRunner/directed_graph_system/config.json.
+Starting directed graph execution
+------------------------------
+file1.py started at 2025-05-05 09:43:29.038682
+file1.py ended at 2025-05-05 09:43:34.093159, duration 0:00:05.054477
+file1.py output:
+File 1: Starting API simulation...
+File 1: Finished API simulation.
+
+file2.py started at 2025-05-05 09:43:34.599250
+file3.py started at 2025-05-05 09:43:35.108244
+file3.py ended at 2025-05-05 09:43:38.136821, duration 0:00:03.028577
+file3.py output:
+File 3: Starting API simulation...
+File 3: Finished API simulation.
+
+file2.py ended at 2025-05-05 09:43:39.651957, duration 0:00:04.543713
+file2.py output:
+File 2: Starting API simulation...
+File 2: Finished API simulation.
+
+file4.py started at 2025-05-05 09:43:40.157796
+file4.py ended at 2025-05-05 09:43:46.205830, duration 0:00:06.048034
+file4.py output:
+File 4: Starting API simulation...
+File 4: Finished API simulation.
+
+All nodes completed successfully.
+------------------------------
+Released lock and removed lock file.
+Acquired lock (PID 6895).
+Loaded configuration from /Users/gaborvaszi/Development/Projects/MyProjects/Automation/SimpleScriptRunner/directed_graph_system/config.json.
+Starting directed graph execution
+------------------------------
+file1.py started at 2025-05-05 10:05:36.166633
+file1.py ended at 2025-05-05 10:05:41.219725, duration 0:00:05.053092
+file1.py output:
+File 1: Starting API simulation...
+File 1: Finished API simulation.
+
+file2.py started at 2025-05-05 10:05:41.725720
+file3.py started at 2025-05-05 10:05:42.234393
+file3.py ended at 2025-05-05 10:05:45.763602, duration 0:00:03.529209
+file3.py output:
+File 3: Starting API simulation...
+File 3: Finished API simulation.
+
+file2.py ended at 2025-05-05 10:05:46.771371, duration 0:00:05.045651
+file2.py output:
+File 2: Starting API simulation...
+File 2: Finished API simulation.
+
+file4.py started at 2025-05-05 10:05:47.276899
+file4.py ended at 2025-05-05 10:05:53.321668, duration 0:00:06.044769
+file4.py output:
+File 4: Starting API simulation...
+File 4: Finished API simulation.
+
+All nodes completed successfully.
+------------------------------
+Released lock and removed lock file.

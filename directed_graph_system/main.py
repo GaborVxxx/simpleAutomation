@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Directed Graph System Orchestrator:
-- Reads dependency graph from config.json under directed_graph_system/
-- Executes scripts from process_files/ as nodes, respecting 'in' dependencies
-- Launches ready nodes asynchronously via subprocess.Popen
+Directed Graph System Orchestrator with Resource & Deadline Tracking:
+- Reads dependency graph and optional settings from config.json under directed_graph_system/
+- Validates global deadline and system resources before launching nodes
+- Executes node scripts from process_files/ asynchronously via subprocess.Popen
+- Monitors per-node timeouts, kills prolonged tasks
 - Tracks completion, updates dependencies, and spawns dependents when ready
 - Uses lock file (main.lock) with stale-lock detection
-- Writes logs to main.log, error.log, and benchmarks.log under directed_graph_system/
+- Logs to main.log, error.log, and benchmarks.log under directed_graph_system/
 """
 import os
 import sys
@@ -16,8 +17,17 @@ import atexit
 import subprocess
 import datetime
 import time
+import shutil
 from pathlib import Path
 from collections import deque
+
+# External dependency for resource monitoring
+try:
+    import psutil
+except ImportError:
+    logging.basicConfig(level=logging.ERROR)
+    logging.error("The 'psutil' module is required for resource monitoring. Please install it via 'pip install psutil'.")
+    sys.exit(1)
 
 # Track if this process successfully acquired the lock
 HAS_LOCK = False
@@ -41,18 +51,16 @@ def setup_logging():
     logger.setLevel(logging.INFO)
     fmt = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
     # main.log
-    fh_main = logging.FileHandler(MAIN_LOG, mode='a')
-    fh_main.setFormatter(fmt)
-    logger.addHandler(fh_main)
+    logger.addHandler(logging.FileHandler(MAIN_LOG, mode='a'))
     # console
     ch = logging.StreamHandler()
     ch.setFormatter(fmt)
     logger.addHandler(ch)
     # error.log
-    fh_err = logging.FileHandler(ERROR_LOG, mode='a')
-    fh_err.setLevel(logging.ERROR)
-    fh_err.setFormatter(fmt)
-    logger.addHandler(fh_err)
+    err = logging.FileHandler(ERROR_LOG, mode='a')
+    err.setLevel(logging.ERROR)
+    err.setFormatter(fmt)
+    logger.addHandler(err)
 
 # ─── Benchmark Logging ────────────────────────────────────────────────────
 def setup_benchmark():
@@ -90,8 +98,8 @@ def acquire_lock():
         logging.error(f"Failed to create lock file: {e}")
         sys.exit(1)
 
+
 def release_lock():
-    """Remove the lock file if this process holds it."""
     global HAS_LOCK
     if not HAS_LOCK:
         return
@@ -105,26 +113,79 @@ def release_lock():
 
 atexit.register(release_lock)
 
-# ─── Graph Loading ────────────────────────────────────────────────────────
-def load_graph():
-    """Load the 'nodes' mapping from directed_graph_system/config.json."""
+# ─── Configuration Loading ────────────────────────────────────────────────
+def load_config():
+    """Load configuration JSON with optional deadlines and resource settings."""
     try:
-        data = json.loads(CONFIG_FILE.read_text(encoding='utf-8'))
-        return data['nodes']
+        cfg = json.loads(CONFIG_FILE.read_text(encoding='utf-8'))
+        logging.info(f"Loaded configuration from {CONFIG_FILE}.")
+        return cfg
     except Exception as e:
         logging.error(f"Error loading config.json: {e}")
         sys.exit(1)
 
+def load_graph():
+    """Extract and return only the 'nodes' mapping from config."""
+    return load_config().get('nodes', {})
+
+# ─── Resource & Deadline Helpers ─────────────────────────────────────────
+def wait_for_resources(res_cfg, poll_interval=5, timeout=None):
+    """Blocks until system resources meet thresholds in res_cfg dict or raises TimeoutError."""
+    last_log    = 0.0
+    log_interval= max(poll_interval, 1)
+    start       = time.time()
+
+    while True:
+        # Timeout enforcement for resource wait
+        if timeout is not None and (time.time() - start) > timeout:
+            raise TimeoutError(f"Resources not available within {timeout}s")
+
+        ok = True
+        # CPU utilization check
+        cpu_pct = res_cfg.get('cpu_percent')
+        if cpu_pct is not None and psutil.cpu_percent(interval=0.5) > cpu_pct:
+            ok = False
+        # Memory utilization check
+        mem_pct = res_cfg.get('memory_percent')
+        if ok and mem_pct is not None and psutil.virtual_memory().percent > mem_pct:
+            ok = False
+        # Disk free space check (cross-platform)
+        disk_free = res_cfg.get('disk_free_mb')
+        if ok and disk_free is not None:
+            free_mb = shutil.disk_usage(PROCESS_DIR).free / (1024 * 1024)
+            if free_mb < disk_free:
+                ok = False
+        # Load average check (Unix-only)
+        load1_cfg = res_cfg.get('load_avg_1m')
+        if ok and load1_cfg is not None:
+            try:
+                load1 = psutil.getloadavg()[0]
+            except (AttributeError, OSError):
+                load1 = None
+            if load1 is not None and load1 > load1_cfg:
+                ok = False
+        if ok:
+            return
+        # Throttle log to once per interval
+        now = time.time()
+        if now - last_log >= log_interval:
+            logging.info("Resources busy—waiting for availability...")
+            last_log = now
+        time.sleep(poll_interval)
+
 # ─── Node Execution ────────────────────────────────────────────────────────
 def launch_node(node, bench):
-    """Start a node script and return (process, start_time) or (None, None) on failure."""
+    """Start a node script and return process handle and start time."""
     path = PROCESS_DIR / node
-    start = datetime.datetime.now()
+    start= datetime.datetime.now()
     bench.info(f"{node} started at {start}")
     try:
-        proc = subprocess.Popen([
-            sys.executable, str(path)
-        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        proc = subprocess.Popen(
+            [sys.executable, str(path)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
         return proc, start
     except Exception as e:
         logging.error(f"Failed to start {node}: {e}")
@@ -133,58 +194,94 @@ def launch_node(node, bench):
 # ─── Orchestration ────────────────────────────────────────────────────────
 def main():
     setup_logging()
-    bench = setup_benchmark()
+    bench     = setup_benchmark()
     acquire_lock()
 
-    graph = load_graph()
-    # Compute in-degree and adjacency from 'in' lists
-    in_degree = {n: len(d['in']) for n, d in graph.items()}
-    adj = {n: [] for n in graph}
-    for n, d in graph.items():
-        for prereq in d['in']:
-            if prereq not in adj:
-                logging.error(f"Config error: prereq '{prereq}' not defined.")
-                sys.exit(1)
-            adj[prereq].append(n)
+    cfg       = load_config()
+    deadline  = cfg.get('deadline_seconds')
+    res_cfg   = cfg.get('resources', {})
+    graph     = cfg.get('nodes', {})
 
-    queue = deque([n for n, deg in in_degree.items() if deg == 0])
-    running = {}
+    if deadline is not None and deadline <= 0:
+        logging.error(
+            "Global deadline of %s seconds expired before start; aborting run.",
+            deadline
+        )
+        sys.exit(1)
+
+    # Build in-degree and adjacency
+    in_degree = {n: len(d.get('in', [])) for n, d in graph.items()}
+    adj       = {n: [] for n in graph}
+    timeouts  = {n: d.get('timeout') for n, d in graph.items()}
+    for n, d in graph.items():
+        for pr in d.get('in', []):
+            if pr not in adj:
+                logging.error(f"Config error: prereq '{pr}' not defined.")
+                sys.exit(1)
+            adj[pr].append(n)
+
+    start_time= time.time()
+    queue     = deque([n for n, deg in in_degree.items() if deg == 0])
+    running   = {}
     completed = set()
 
     logging.info("Starting directed graph execution")
     bench.info(SEPARATOR)
 
     while queue or running:
-        # Launch all ready nodes
+        # Global deadline enforcement
+        if deadline is not None and (time.time() - start_time) > deadline:
+            logging.error("Global deadline exceeded; aborting run.")
+            sys.exit(1)
+
+        # Launch ready nodes with resource check
         while queue:
-            n = queue.popleft()
-            proc, start = launch_node(n, bench)
+            node      = queue.popleft()
+            if res_cfg:
+                # calculate remaining time for resource wait
+                remaining = None
+                if deadline is not None:
+                    elapsed   = time.time() - start_time
+                    remaining = max(deadline - elapsed, 0)
+                try:
+                    wait_for_resources(res_cfg, poll_interval=5, timeout=remaining)
+                except TimeoutError as e:
+                    logging.error(f"Resource wait timeout: {e}")
+                    sys.exit(1)
+            proc, start= launch_node(node, bench)
             if not proc:
-                logging.error(f"Error launching node {n}")
+                logging.error(f"Error launching node {node}")
                 sys.exit(1)
-            running[n] = (proc, start)
+            running[node] = (proc, start)
 
         # Poll running processes
         time.sleep(0.5)
-        for n, (proc, start) in list(running.items()):
+        now = time.time()
+        for node, (proc, start_dt) in list(running.items()):
+            timeout = timeouts.get(node)
+            elapsed = now - start_dt.timestamp()
+            if timeout is not None and elapsed > timeout:
+                proc.kill()
+                logging.error(f"Node {node} timed out after {timeout} seconds.")
+                sys.exit(1)
             ret = proc.poll()
             if ret is not None:
                 stdout, stderr = proc.communicate()
                 end = datetime.datetime.now()
-                bench.info(f"{n} ended at {end}, duration {end - start}")
+                bench.info(f"{node} ended at {end}, duration {end - start_dt}")
                 if ret == 0:
-                    logging.info(f"{n} output:\n{stdout}")
-                    completed.add(n)
-                    for child in adj[n]:
+                    logging.info(f"{node} output:\n{stdout}")
+                    completed.add(node)
+                    for child in adj[node]:
                         in_degree[child] -= 1
                         if in_degree[child] == 0:
                             queue.append(child)
                 else:
-                    logging.error(f"{n} failed (code {ret}):\n{stderr}")
+                    logging.error(f"{node} failed (code {ret}):\n{stderr}")
                     sys.exit(1)
-                del running[n]
+                del running[node]
 
-    # Final check
+    # Final check for cycles
     if len(completed) != len(graph):
         logging.error("Cycle detected or missing dependency; aborting.")
         sys.exit(1)

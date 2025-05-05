@@ -8,26 +8,26 @@ A lock-safe, dependency-driven orchestrator that runs Python scripts (nodes) in 
 
 ### Project Layout
 
+```
 simpleAutomation/
 ├─ run.py
 ├─ run.json
 ├─ process_files/
-│ ├─ file1.py
-│ ├─ file2.py
-│ └─ …
+│   ├─ file1.py
+│   ├─ file2.py
+│   └─ …
 └─ directed_graph_system/
-├─ main.py
-├─ config.json
-├─ main.lock
-├─ main.log
-├─ error.log
-└─ benchmarks.log
+    ├─ main.py
+    ├─ config.json
+    ├─ main.lock
+    ├─ main.log
+    ├─ error.log
+    └─ benchmarks.log
+```
 
-
-
-- **run.py**: Launcher that reads `runconfig.json` to invoke `directed_graph_system/main.py`.
-- **process_files/**: All node scripts live here.
-- **directed_graph_system/**: Contains the orchestrator, its config, lock, and logs.
+* **run.py**: Launcher that reads `runconfig.json` to invoke `directed_graph_system/main.py`.
+* **process\_files/**: All node scripts live here.
+* **directed\_graph\_system/**: Contains the orchestrator, its config, lock, and logs.
 
 ---
 
@@ -35,6 +35,13 @@ simpleAutomation/
 
 ```json
 {
+  "deadline_seconds": 3600,   // null → no global timeout
+  "resources": {
+    "cpu_percent": 80,        // null → skip CPU check
+    "memory_percent": 75,
+    "disk_free_mb": 1024,
+    "load_avg_1m": 4.0
+  },
   "nodes": {
     "file1.py": { "in": [] },
     "file2.py": { "in": ["file1.py"] },
@@ -42,47 +49,151 @@ simpleAutomation/
     "file4.py": { "in": ["file2.py","file3.py"] }
   }
 }
+```
 
-nodes: Map of script names to their "in" prerequisites.
-Downstream edges are inferred at runtime—only "in" lists are maintained.
+* **nodes**: Map of script names to their `in` prerequisites. Downstream edges are inferred at runtime—only `in` lists are maintained.
 
-Execution Flow
-  Lock Acquisition
-    Checks for main.lock; aborts if held by an active PID, or cleans up a stale lock.
-    Writes its own PID to main.lock and sets HAS_LOCK = True.
+---
 
-Graph Loading
-  Parses config.json into a nodes → in[] map.
-  Builds:
-    in_degree[node] = number of unmet prerequisites.
-    adj[node] = list of dependents (inverted from "in").
+### Execution Flow
 
-Topological Scheduling
-  Enqueues all nodes with in_degree == 0.
-  Launch Phase: Spawns each ready node via subprocess.Popen, tracking in a running dict.
-  Polling Phase (every 0.5 s):
-    For each finished process:
-      Logs its output or error.
-      Adds to completed if success, decrements in_degree of its dependents, enqueues any newly ready nodes.
-      Aborts on failure.
+1. **Lock Acquisition**
 
-Completion & Cleanup
-  If all nodes complete, logs success; if not, reports a cycle or missing dependency and aborts.
-  Releases main.lock (only if HAS_LOCK is True) on exit.
+   * Checks for `main.lock`; aborts if held by an active PID, or cleans up a stale lock.
+   * Writes its own PID to `main.lock` and sets `HAS_LOCK = True`.
 
-Logging & Benchmarking
-  main.log: INFO-level events (lock actions, orchestration start/end, node outputs).
-  error.log: ERROR-level events (lock failures, missing dependencies, node failures).
-  benchmarks.log: Timestamped records of each node’s start, end, and duration.
+2. **Graph Loading**
 
-Running the Orchestrator
-  Point the launcher (run.json):
-    { "entry_point": "directed_graph_system/main.py" }
+   * Parses `config.json` into a nodes → `in[]` map.
+   * Builds:
 
-Execute:
-  python run.py
+   ```python
+   in_degree[node] = number of unmet prerequisites
+   adj[node] = list of dependents (inverted from "in")
+   ```
 
-Running Tests:
-  python3 -m unittest discover -v
+3. **Topological Scheduling**
 
+   * Enqueues all nodes with `in_degree == 0`.
+   * **Launch Phase**: Spawns each ready node via `subprocess.Popen`, tracking in a `running` dict.
+   * **Polling Phase** (every 0.5 s):
 
+     * For each finished process:
+
+       * Logs its output or error.
+       * On success: adds to `completed`, decrements `in_degree` of dependents, enqueues newly ready nodes.
+       * On failure: aborts immediately.
+
+4. **Completion & Cleanup**
+
+   * If all nodes complete, logs success; otherwise reports a cycle or missing dependency and aborts.
+   * Releases `main.lock` (only if `HAS_LOCK` is `True`) on exit.
+
+---
+
+### Logging & Benchmarking
+
+* **`main.log`**: INFO-level events (lock actions, orchestration start/end, node outputs).
+* **`error.log`**: ERROR-level events (lock failures, missing dependencies, node failures).
+* **`benchmarks.log`**: Timestamped records of each node’s start, end, and duration.
+
+---
+
+### Running the Orchestrator
+
+1. **Launcher config** (`run.json`):
+
+   ```json
+   { "entry_point": "directed_graph_system/main.py" }
+   ```
+2. **Execute**:
+
+   ```bash
+   python run.py
+   ```
+
+### Running Tests
+
+```bash
+python3 -m unittest discover -v
+```
+
+---
+
+## Platform & Resource Tracking
+
+To prevent overloading your machine or overshooting capacity when spinning up many jobs in parallel, the orchestrator includes a **platform tracking** subsystem that enforces configurable CPU, memory, disk, and load thresholds. This ensures that, for example, if your build or data‑processing steps spike resource usage, new nodes will pause until enough headroom is available.
+
+#### Key Components
+
+1. **`wait_for_resources(res_cfg, poll_interval, timeout)`**
+
+   * **Purpose:** Blocks until all specified metrics are under their thresholds, or until an optional timeout expires.
+   * **Parameters:**
+
+     * `res_cfg`: dict with any of:
+
+       * `cpu_percent` – max allowed average CPU usage (%)
+       * `memory_percent` – max allowed RAM usage (%)
+       * `disk_free_mb` – minimum free space (MB) under `process_files/`
+       * `load_avg_1m` – max 1‑minute Unix load average
+     * `poll_interval`: seconds between checks
+     * `timeout`: overall wait ceiling in seconds; if exceeded, raises `TimeoutError`, aborting the run.
+   * **Behavior:**
+
+     * Pulls instantaneous CPU via `psutil.cpu_percent(interval=0.5)`.
+     * Reads `psutil.virtual_memory().percent`.
+     * Queries disk free space with `shutil.disk_usage(PROCESS_DIR)`.
+     * On Unix, reads `psutil.getloadavg()[0]` (skipped silently on Windows).
+     * Any metric over its limit sets a “busy” flag; the function loops until all are below their limits.
+     * Emits an INFO log every `poll_interval` seconds:
+
+       ```
+       2025-05-05 12:00:00 INFO: Resources busy—waiting for availability...
+       ```
+
+2. **Configuration via `config.json`**
+
+   ```json
+   {
+     "resources": {
+       "cpu_percent": 80,
+       "memory_percent": 75,
+       "disk_free_mb": 1024,
+       "load_avg_1m": 4.0
+     }
+   }
+   ```
+
+   * **Null or missing →** that check is skipped.
+   * **Omitting `resources` block →** nodes launch immediately, ignoring platform load.
+
+3. **Global Timeout Interaction**
+   If you also set `"deadline_seconds": X`, then:
+
+   * The remaining time until the global deadline is passed as `timeout` into `wait_for_resources()`.
+   * If resource waits push you past the deadline, you’ll see:
+
+     ```
+     ERROR: Resource wait timeout: Resources not available within 30s
+     ```
+   * And the orchestrator exits with failure.
+
+#### How to Tune and Troubleshoot
+
+* **Too many idle waits?**
+
+  * Increase thresholds (e.g. allow CPU up to 90%), or remove non‑critical checks.
+  * Lower `poll_interval` for more responsive checks (defaults to 5 s).
+
+* **Seeing unexpected timeout errors?**
+
+  * Check that your workload actually frees up the resource within your global deadline.
+  * Temporarily set `"deadline_seconds": null` and run with only resource limits to isolate which metric is starved.
+
+* **Cross-platform notes:**
+
+  * On Windows, `psutil.getloadavg()` is unavailable; that check is skipped silently.
+  * Disk usage always measures the free space under the `process_files/` directory, so ensure that’s on the correct volume.
+
+With these pieces in place, your orchestrator dynamically throttles itself to respect host capacity, giving you a safer and more predictable parallel execution framework.

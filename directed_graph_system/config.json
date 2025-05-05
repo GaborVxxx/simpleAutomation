@@ -1,8 +1,15 @@
 {
+  "deadline_seconds": 3600,
+  "resources": {
+    "cpu_percent": 80,
+    "memory_percent": 75,
+    "disk_free_mb": 1024,
+    "load_avg_1m": 4.0
+  },
   "nodes": {
-    "file1.py": { "in": [] },
-    "file2.py": { "in": ["file1.py"] },
-    "file3.py": { "in": ["file1.py"] },
-    "file4.py": { "in": ["file2.py","file3.py"] }
+    "file1.py": { "in": [], "timeout": null },
+    "file2.py": { "in": ["file1.py"], "timeout": 300  },
+    "file3.py": { "in": ["file1.py"], "timeout": 300  },
+    "file4.py": { "in": ["file2.py","file3.py"], "timeout": 300  }
   }
 }
